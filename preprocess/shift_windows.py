@@ -5,10 +5,12 @@ import collections
 import numpy as np
 import pandas as pd
 import dpkt
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-from . import basic_process
+import basic_process
 
-class shift_preprocess(basic_process.basic_processer):
+class shift_preprocess(basic_process.Basic_processer):
     def __init__(self, queue_sizes):
         self.qs = queue_sizes
 
@@ -39,10 +41,23 @@ class shift_preprocess(basic_process.basic_processer):
 
         return (queue[-1][0],avg_interval, ip_count)
 
-
     @staticmethod
     def avg_interval(iters):
         prev = next(iters)
         for now in iters:
             yield now - prev
             prev = now
+
+    def view(self, df):
+        # sns.pairplot(df.loc[:,['avg_interval', 'ip_count']])
+        plt.scatter(df['averge_interval'],df['ip_count'])
+        plt.show()
+
+if __name__ == '__main__':
+    fh = open('../test_data.pcap', 'rb')
+    pcaps = dpkt.pcap.Reader(fh)
+    pos = shift_preprocess(10)
+    res = pos.extract(pcaps)
+    pos.view(res)
+
+
