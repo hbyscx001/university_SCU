@@ -1,0 +1,5 @@
+*.pcap
+*.pcapng
+*.pyc
+__pycache__/
+.ropeproject/
