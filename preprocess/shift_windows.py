@@ -8,7 +8,7 @@ import dpkt
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-import basic_process
+from . import basic_process
 
 class shift_preprocess(basic_process.Basic_processer):
     def __init__(self, queue_sizes):
@@ -54,7 +54,7 @@ class shift_preprocess(basic_process.Basic_processer):
         plt.show()
 
 if __name__ == '__main__':
-    fh = open('../test_data.pcap', 'rb')
+    fh = open('../test/test_data.pcap', 'rb')
     pcaps = dpkt.pcap.Reader(fh)
     pos = shift_preprocess(10)
     res = pos.extract(pcaps)

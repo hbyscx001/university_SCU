@@ -25,13 +25,3 @@ class Basic_processer(object):
     @abc.abstractmethod
     def view(self):
         pass
-
-
-if __name__ == '__main__':
-    class example_processer(basic_processer):
-        def extract(self, pcap):
-            df = pd.DataFrame([ts for ts, *args in pcap], columns=('timestamp',))
-            return df
-
-        def view(self, dataframe):
-            sns.distplot(dataframe)
