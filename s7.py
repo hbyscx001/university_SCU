@@ -14,14 +14,10 @@ class S7Protocol(object):
     def __init__(self):
         pass
 
-    def s7_check(self, ts, buf):
-        eth = dpkt.ethernet.Ethernet(buf)
-        if type(eth.data) is dpkt.ip.IP and type(eth.data.data) is dpkt.tcp.TCP:
-            tcp_payload = eth.data.data.data
-            *args, tpkt_payload = S7Protocol.tpkt_unpack(tcp_payload)
-            *args, cotp_payload = S7Protocol.cotp_unpack(tpkt_payload)
-            return S7Protocol.s7_unpack(cotp_payload)[-1]
-        return None
+    def s7_check(self, tcp_payload):
+        *args, tpkt_payload = S7Protocol.tpkt_unpack(tcp_payload)
+        *args, cotp_payload = S7Protocol.cotp_unpack(tpkt_payload)
+        return S7Protocol.s7_unpack(cotp_payload)
 
     @staticmethod
     def tpkt_unpack(tcp_payload):
@@ -34,7 +30,7 @@ class S7Protocol(object):
 
     @staticmethod
     def cotp_unpack(tpkt_payload):
-        if len(tcp_payload) < 3:
+        if len(tpkt_payload) < 3:
             raise S7ProtocolException("TPKT payload hasn't enough size")
         length, pdu_type, option = struct.unpack("!BBB", tpkt_payload[:3])
         cotp_data = struct.unpack("!{}s".format(length-2), tpkt_payload[3:length+1])

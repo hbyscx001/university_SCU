@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding:utf8 -*-
 
-from collection import Counter
+from collections import Counter
 
 
 from . import basic_process
-from . import s7
-from . import pcap_reader
+from .. import s7
 
 
 class gram_preprocess(basic_process.Basic_processer):
@@ -14,7 +13,6 @@ class gram_preprocess(basic_process.Basic_processer):
         self.analyer = s7.S7Protocol()
         self.freq_items = Counter()
         self.N = 3
-        self.pkts_reader = pcap_reader(pcapfile)
 
     def extract(self):
         for ts, buf in self.pkts_reader:

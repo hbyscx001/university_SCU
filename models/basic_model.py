@@ -2,9 +2,6 @@
 # coding:utf-8
 
 class Basic_model(object):
-    def __init__(self, processer):
-        self._processer = processer
-
     def build(self, pkts):
         pass
 
