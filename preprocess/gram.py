@@ -29,5 +29,5 @@ class gram_preprocess(basic_process.Basic_processer):
         length = len(raw_data)
         self.freq_items.update([raw_data[i:i+self.N] for i in range(0, length-self.N)])
 
-
-
+    def find_format_message(self, raw_data):
+        pass
