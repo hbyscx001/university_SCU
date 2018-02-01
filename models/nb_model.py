@@ -13,6 +13,21 @@ import matplotlib.pyplot as plt
 def hash_fun(data):
     return int(hashlib.new('md5', data).hexdigest(), base=16)
 
+
+class Sknb_model(basic_model.Basic_model):
+    def build(self, X, Y):
+        self.clfs = [MultinomialNB().fit(X, y) for y in np.nditer(Y, flags=['external_loop'], order='F')]
+
+    def predict(self, X):
+        predicts_list = [clf.predict_proba(X) for clf in self.clfs]
+        return predicts_list
+
+    def score(self, X, Y):
+        Y_columns = np.nditer(Y, flags=['external_loop'], order='F')
+        scores = [clf.score(X, y) for clf, y in zip(self.clfs, Y_columns)]
+        return scores
+
+
 class Naive_model(basic_model.Basic_model):
     def build(self, X, Y, ts=None):
         if ts:
@@ -20,11 +35,11 @@ class Naive_model(basic_model.Basic_model):
         else:
             return self.build_nb_models(X, Y)
 
+    #修改输入为np.array数组
     def build_nb_models(self, X, Y):
         self.models = []
-        for idx in range(len(Y[0])):
-            y = [ item[idx] for item in Y ]
-            self.models.append(frequecy_model(X, y))
+        for idx in range(Y.shape[1]):
+            self.models.append(frequecy_model(X, Y[:,idx]))
         list(map(lambda mod:mod.frequecy_count(), self.models))
         return self.models
 
@@ -40,6 +55,19 @@ class Naive_model(basic_model.Basic_model):
             res_dict['Y_field{}'.format(idx+1)] = self.models[idx].check_X(X)
         return res_dict
 
+    def X_predict(self, X):
+        return [mod.predict_X(X) for mod in self.models]
+
+    def test(self, X, Y):
+        counts = X.shape[0]
+        true_ = sum([all(self.X_predict(x_sample) == y_sample)
+                     for x_sample, y_sample in zip(X, Y)])
+        for x_sample, y_sample in zip(X, Y):
+            if all(self.X_predict(x_sample) == y_sample) == False:
+                print('Wrong example:\nx:{}\npredict_y:{}\ny:{}'.format(x_sample, self.X_predict(x_sample), y_sample))
+        return true_ / counts * 1.0
+
+
 class Frequecy_Error(Exception):
     def __init__(self, feature, pos):
         return "feature {} didn't appeared in position: {} before".format(feature, pos)
@@ -48,7 +76,7 @@ class frequecy_model(object):
     def __init__(self, X, y):
         self._X = X
         self._y = y
-        self.x_columns = [[row[idx] for row in self._X] for idx in range(len(self._X[0]))]
+        self.x_columns = [X[:,idx] for idx in range(X.shape[1])]
 
     def frequecy_time(self):
         pass
@@ -72,17 +100,21 @@ class frequecy_model(object):
             if y not in self.y_counter:
                 raise Frequecy_Error('y',pos+1)
             xy_count = self.X_y_counters[pos][(X[pos], y)] + lamda
-            x_size = len(self.X_counters[pos])
-            y_count = self.y_counter[y] + lamda * x_size
+            y_count = self.y_counter[y] + lamda * len(self.X_counters[pos])
             res.append(xy_count / y_count)
 
         return reduce(lambda i,j: i*j, res) * (self.y_counter[y] / sum(self.y_counter.values()))
 
-    def check_X(self, X):
+    def check_X(self, X, sum_to_1=True):
         res = {}
         for y in set(self._y):
             res[y] = self.check_X_y(X, y)
         return res
+
+    def predict_X(self, X):
+        res = self.check_X(X)
+        return max(res, key=lambda k:res[k])
+
 
     def view(self):
         y_set = set(self._y)
