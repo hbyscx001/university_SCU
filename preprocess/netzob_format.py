@@ -3,6 +3,7 @@
 from . import basic_process
 from .. import s7
 import collections
+from tqdm import tqdm
 
 from netzob.all import *
 import pickle
@@ -77,7 +78,7 @@ class Netzob_process(basic_process.Basic_processer):
         messages = PCAPImporter.readFile(filepath).values()
         filter_s7(messages)
         self.sessions = self.split_session(messages)
-        for session in self.sessions:
+        for session in tqdm(self.sessions):
             sessions_keys["-".join(session.getEndpointsList()[0])] = self.anaylze_session(session)
         return sessions_keys
 
