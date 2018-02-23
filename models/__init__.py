@@ -10,3 +10,4 @@ from .nb_model import Sknb_model, Naive_model
 from .time_interval_model import Time_interval_model
 from .bayes_network import Bayes_neural_network
 from .undirect_gragh_model import Undirect_gragh_model
+from .self_model import Self_model

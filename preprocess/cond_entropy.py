@@ -21,6 +21,7 @@ def conditional_entropy(X, y):
     return sum(entropy_list)
 
 def self_entropy(samples, level=1):
+    res = []
     for i in range(1,level+1):
         y_samples = samples[i:]
         X_samples = []
@@ -29,5 +30,6 @@ def self_entropy(samples, level=1):
             X_samples.append(tuple(samples[y_idx - i:y_idx]))
 
         X_samples = np.array(X_samples)
-
-        print("the entropy of sample in level {}:{}".format(i, conditional_entropy(X_samples, y_samples)))
+        res.append(conditional_entropy(X_samples, y_samples))
+        # print("the entropy of sample in level {}:{}".format(i, conditional_entropy(X_samples, y_samples)))
+    return res
