@@ -5,3 +5,4 @@ from .netzob_format import *
 from .cond_entropy import *
 # from . import gram
 # from . import netzob_format
+from .sessions_white_list import sswl

@@ -39,17 +39,52 @@ class Self_model(basic_model.Basic_model):
             values = list(y_sample[np.all(X_sample == x_key, axis=1)])
             counters_dict[x_key].update(values)
 
+        for ins_counter in counters_dict.values():
+            tmp_sum = float(sum(ins_counter.values()))
+            for key in ins_counter:
+                ins_counter[key] /= tmp_sum
+
         return counters_dict
 
     def build(self, samples, level_list):
         self.field_models = []
-        for col,level in zip(samples.T, level_list):
+        self.level_list = level_list
+        for col, level in zip(samples.T, level_list):
             res = self._build_field(col, level)
             self.field_models.append(res)
         print("Done")
 
+    def trust_sample(self, samples):
+        return_sample = []
 
+        for col,level,mod in zip(samples.T, self.level_list, self.field_models):
+            return_sample.append(self.caculate_field(col, level, mod))
 
+        return return_sample
 
+    def caculate_field(self, field_array, level, mod):
+        return [(field_array[idx] == self.map(tuple(field_array[idx-level:idx]), mod),
+                 mod[tuple(field_array[idx-level:idx])][field_array[idx]])
+                for idx in range(level, len(field_array))]
 
+    def map(self, sample, mod):
+        import operator
 
+        sample = tuple(sample)
+        field = mod[sample]
+        return max(field.items(), key=operator.itemgetter(1))[0]
+
+    def check(self, samples):
+        field_result = []
+        for data, ins_counter, level in zip(samples, self.field_models, self.level_list):
+            X = tuple(data[:-1])
+            y = data[-1]
+            if X in ins_counter:
+                field_result.append(ins_counter[X][y])
+            else:
+                field_result.append(None)
+
+        return field_result
+
+    def auto_check(self):
+        pass
